@@ -1,4 +1,4 @@
-const API_ENDPOINT = 'https://api.neverhaveiever.io/v1/statement';
+const API_ENDPOINT = 'https://api.neverhaveiever.io/v1/statements/random';
 
 const STATEMENT = document.querySelector('#js-ph-statement');
 const LEVEL_SELECTION = document.querySelector('#js-ph-category-selection');
@@ -21,9 +21,7 @@ function refreshStatement() {
       .get(API_ENDPOINT, {
         crossdomain: true,
         params: {
-          harmless: TOGGLE_HARMLESS.checked,
-          delicate: TOGGLE_DELICATE.checked,
-          offensive: TOGGLE_OFFENSIVE.checked,
+          category: retrieveCategories(),
         },
       })
       .then(function(response) {
@@ -46,9 +44,22 @@ document.addEventListener('DOMContentLoaded', function() {
   document.addEventListener('click', refreshStatement);
   document.addEventListener('keydown', refreshStatement);
 
-  LEVEL_SELECTION.addEventListener('click', function (event) {
+  LEVEL_SELECTION.addEventListener('click', function(event) {
     event.stopPropagation();
   });
+
+  [TOGGLE_HARMLESS, TOGGLE_DELICATE, TOGGLE_OFFENSIVE]
+      .forEach(function(toggle) {
+        toggle.addEventListener('change', function() {
+          if (!TOGGLE_HARMLESS.checked &&
+              !TOGGLE_DELICATE.checked &&
+              !TOGGLE_OFFENSIVE.checked) {
+            TOGGLE_HARMLESS.checked = true;
+            TOGGLE_DELICATE.checked = true;
+            TOGGLE_OFFENSIVE.checked = true;
+          }
+        });
+      });
 
   window.addEventListener('offline', function() {
     blockRefresh = true;
@@ -62,3 +73,26 @@ document.addEventListener('DOMContentLoaded', function() {
 
   refreshStatement();
 });
+
+/**
+ * Retrieves categories.
+ *
+ * @return {Array}
+ */
+function retrieveCategories() {
+  const categories = [];
+
+  if (TOGGLE_HARMLESS.checked) {
+    categories.push('harmless');
+  }
+
+  if (TOGGLE_DELICATE.checked) {
+    categories.push('delicate');
+  }
+
+  if (TOGGLE_OFFENSIVE.checked) {
+    categories.push('offensive');
+  }
+
+  return categories;
+}
